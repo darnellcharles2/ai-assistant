@@ -1,0 +1,42 @@
+{
+  "name": "SAVIOR Made Posture",
+  "description": "The SAVIOR Made framework defines the posture and identity from which all work flows. It is a reminder of who you are in Christ and how that shapes everything you create.",
+  "acronym": "SAVIOR",
+  "posture": {
+    "S": {
+      "word": "Saved",
+      "description": "You are saved by grace through faith. Your identity is secure in Christ, not in your output or productivity.",
+      "scripture": "Ephesians 2:8-9"
+    },
+    "A": {
+      "word": "Accountable",
+      "description": "You operate with accountability to God, community, and those you serve. Transparency is non-negotiable.",
+      "scripture": "Hebrews 4:13"
+    },
+    "V": {
+      "word": "Victorious",
+      "description": "You walk in the victory already won by Christ. Setbacks are not defeats; they are setups for testimony.",
+      "scripture": "Romans 8:37"
+    },
+    "I": {
+      "word": "Intentional",
+      "description": "Every action, piece of content, and decision is made with purpose and kingdom alignment.",
+      "scripture": "Colossians 3:23"
+    },
+    "O": {
+      "word": "Obedient",
+      "description": "Obedience to God's Word and leading comes before personal preference or market demand.",
+      "scripture": "John 14:15"
+    },
+    "R": {
+      "word": "Resilient",
+      "description": "You are built to endure. Blessedly stressed means the pressure produces purpose.",
+      "scripture": "James 1:2-4"
+    }
+  },
+  "made": {
+    "description": "You are MADE by God, for God. Your creativity, skills, and vision are gifts to be stewarded, not owned.",
+    "scripture": "Ephesians 2:10",
+    "affirmation": "I am SAVIOR Made. Saved, Accountable, Victorious, Intentional, Obedient, and Resilient. I was made by God for His purposes, and everything I create flows from that identity."
+  }
+}

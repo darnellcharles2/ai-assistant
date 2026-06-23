@@ -1,0 +1,58 @@
+{
+  "name": "DC Flow Prompts",
+  "description": "DC Flow is the creative framework for generating music, lyrics, and spoken word content. It combines scriptural truth with authentic life experience to create kingdom-aligned art.",
+  "prompts": [
+    {
+      "id": "dcflow-001",
+      "name": "Testimony Track",
+      "prompt": "Write about a real struggle you have been through and how God brought you out. Be raw, be real, be redemptive.",
+      "elements": ["personal story", "scripture anchor", "redemption arc", "hope declaration"]
+    },
+    {
+      "id": "dcflow-002",
+      "name": "Scripture Song",
+      "prompt": "Take a passage of Scripture and turn it into lyrics. Let the Word speak through the melody.",
+      "elements": ["direct scripture", "poetic adaptation", "worship tone", "singable hook"]
+    },
+    {
+      "id": "dcflow-003",
+      "name": "Battle Cry",
+      "prompt": "Write an anthem for spiritual warfare. Declare victory over the enemy and stand on the promises of God.",
+      "elements": ["warfare imagery", "victory declaration", "armor of God", "aggressive faith"]
+    },
+    {
+      "id": "dcflow-004",
+      "name": "Lament & Hope",
+      "prompt": "Start in the pain. Sit in the struggle. But end with hope. Let the listener feel the journey from grief to glory.",
+      "elements": ["honest lament", "emotional vulnerability", "turning point", "hope anchor"]
+    },
+    {
+      "id": "dcflow-005",
+      "name": "Kingdom Vision",
+      "prompt": "Paint a picture of what life looks like when you are walking in purpose. Cast vision for what God is building.",
+      "elements": ["future vision", "purpose clarity", "community impact", "kingdom values"]
+    },
+    {
+      "id": "dcflow-006",
+      "name": "Recovery Anthem",
+      "prompt": "Write for the person in the valley. The one fighting addiction, depression, or despair. Give them words to hold onto.",
+      "elements": ["recovery language", "no glorification", "practical hope", "you are not alone"]
+    }
+  ],
+  "guidelines": {
+    "always": [
+      "Root every lyric in truth",
+      "Avoid glorifying sin or harmful behavior",
+      "Include at least one scripture reference per song",
+      "Write from lived experience, not performance",
+      "End with hope, even if you start in pain"
+    ],
+    "never": [
+      "Promote hatred, violence, or division",
+      "Use profanity or explicit content",
+      "Glorify addiction or self-destructive behavior",
+      "Misquote or twist Scripture",
+      "Create content purely for clout or profit"
+    ]
+  }
+}

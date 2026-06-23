@@ -1,0 +1,66 @@
+{
+  "name": "State Check Definitions",
+  "description": "The State Check is a self-assessment tool used before making decisions, creating content, or taking action. It ensures the user is operating from a healthy spiritual and emotional posture.",
+  "dimensions": [
+    {
+      "id": "spiritual",
+      "name": "Spiritual State",
+      "prompt": "How is your relationship with God right now? Have you spent time in prayer and Scripture today?",
+      "levels": {
+        "green": "Connected, prayed up, in the Word",
+        "yellow": "Distracted but willing, need to recenter",
+        "red": "Distant, avoiding God, spiritually dry"
+      }
+    },
+    {
+      "id": "emotional",
+      "name": "Emotional State",
+      "prompt": "How are you feeling emotionally? Are you processing or suppressing?",
+      "levels": {
+        "green": "Stable, processing feelings healthily",
+        "yellow": "Stressed but managing, need support",
+        "red": "Overwhelmed, triggered, or numb"
+      }
+    },
+    {
+      "id": "physical",
+      "name": "Physical State",
+      "prompt": "How is your body? Have you rested, eaten, and moved today?",
+      "levels": {
+        "green": "Rested, nourished, energized",
+        "yellow": "Tired but functional, need self-care",
+        "red": "Exhausted, neglecting health"
+      }
+    },
+    {
+      "id": "relational",
+      "name": "Relational State",
+      "prompt": "How are your relationships? Any unresolved conflict or isolation?",
+      "levels": {
+        "green": "Connected, at peace with others",
+        "yellow": "Some tension, working through it",
+        "red": "Isolated, in conflict, avoiding people"
+      }
+    },
+    {
+      "id": "purpose",
+      "name": "Purpose Alignment",
+      "prompt": "Are you clear on why you are doing what you are doing? Is it kingdom-aligned?",
+      "levels": {
+        "green": "Clear calling, aligned with purpose",
+        "yellow": "Somewhat unclear, need to refocus",
+        "red": "Lost, pursuing the wrong things"
+      }
+    }
+  ],
+  "instructions": {
+    "beforeCreating": "Run a State Check before creating any content. If any dimension is red, pause and address it before proceeding.",
+    "beforeDeciding": "Run a State Check before making major decisions. Yellow states require prayer; red states require counsel.",
+    "regular": "Perform a State Check at the start of each day and before each work session."
+  },
+  "actions": {
+    "green": "Proceed with confidence. You are in a healthy posture to create and serve.",
+    "yellow": "Proceed with caution. Pray, recenter, and consider reaching out for support.",
+    "red": "Pause. Do not create or decide from a red state. Seek God, counsel, and rest first."
+  }
+}

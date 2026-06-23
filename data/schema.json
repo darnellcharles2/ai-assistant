@@ -1,0 +1,72 @@
+{
+  "name": "Schema Definitions",
+  "description": "Data schemas for the core entities managed by the Blessedly Stressed OS.",
+  "schemas": {
+    "idea": {
+      "description": "A raw idea submitted through the intake endpoint",
+      "fields": {
+        "id": { "type": "string", "description": "Unique identifier", "required": true },
+        "raw_input": { "type": "string", "description": "The original idea text from the user", "required": true },
+        "category": { "type": "string", "description": "Classified category (music, lessons, skool, digitalProducts, brand, automation, stewardship, general)", "required": true },
+        "state_check": { "type": "object", "description": "State check results at time of submission", "required": false },
+        "created_at": { "type": "string", "description": "ISO timestamp of submission", "required": true },
+        "status": { "type": "string", "description": "Processing status (received, processing, reviewed, approved, published)", "required": true },
+        "guardrail_review": { "type": "object", "description": "Results of spiritual guardrail review", "required": false },
+        "output": { "type": "object", "description": "Generated output from the assigned agent", "required": false }
+      }
+    },
+    "song": {
+      "description": "A song or musical work generated through DC Flow",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "title": { "type": "string", "required": true },
+        "lyrics": { "type": "string", "required": false },
+        "scripture_references": { "type": "array", "items": "string", "required": true },
+        "dc_flow_prompt": { "type": "string", "description": "Which DC Flow prompt was used", "required": false },
+        "beat_url": { "type": "string", "description": "URL to generated beat file", "required": false },
+        "status": { "type": "string", "required": true },
+        "created_at": { "type": "string", "required": true }
+      }
+    },
+    "lesson": {
+      "description": "A teaching lesson within the course framework",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "title": { "type": "string", "required": true },
+        "module_id": { "type": "string", "required": true },
+        "scripture_anchor": { "type": "string", "required": true },
+        "content": { "type": "string", "required": false },
+        "reflection_questions": { "type": "array", "items": "string", "required": false },
+        "action_step": { "type": "string", "required": false },
+        "status": { "type": "string", "required": true },
+        "created_at": { "type": "string", "required": true }
+      }
+    },
+    "digitalProduct": {
+      "description": "A digital product (workbook, ebook, template, etc.)",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "title": { "type": "string", "required": true },
+        "type": { "type": "string", "description": "Product type (workbook, ebook, template, journal, planner)", "required": true },
+        "file_url": { "type": "string", "required": false },
+        "outline": { "type": "array", "items": "string", "required": false },
+        "status": { "type": "string", "required": true },
+        "created_at": { "type": "string", "required": true }
+      }
+    },
+    "stateCheckResult": {
+      "description": "Results of a state check assessment",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "spiritual": { "type": "string", "enum": ["green", "yellow", "red"], "required": true },
+        "emotional": { "type": "string", "enum": ["green", "yellow", "red"], "required": true },
+        "physical": { "type": "string", "enum": ["green", "yellow", "red"], "required": true },
+        "relational": { "type": "string", "enum": ["green", "yellow", "red"], "required": true },
+        "purpose": { "type": "string", "enum": ["green", "yellow", "red"], "required": true },
+        "overall": { "type": "string", "enum": ["green", "yellow", "red"], "required": true },
+        "recommendation": { "type": "string", "required": true },
+        "created_at": { "type": "string", "required": true }
+      }
+    }
+  }
+}
