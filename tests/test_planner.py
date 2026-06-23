@@ -1,6 +1,7 @@
 """Tests for agent.planner module."""
 
 import pytest
+from unittest.mock import AsyncMock, patch
 
 from agent.planner import TaskPlanner
 
@@ -77,6 +78,17 @@ class TestGeneratePlan:
         planner = TaskPlanner()
         with pytest.raises(ValueError, match="non-empty string"):
             await planner.generate_plan(123)
+
+    @pytest.mark.asyncio
+    async def test_internal_error_propagates(self):
+        """Cover the except/raise path (lines 75-77) in generate_plan."""
+        planner = TaskPlanner()
+        with patch.object(
+            planner, "_decompose_task", new_callable=AsyncMock,
+            side_effect=RuntimeError("decompose boom"),
+        ):
+            with pytest.raises(RuntimeError, match="decompose boom"):
+                await planner.generate_plan("valid task")
 
 
 # ---------------------------------------------------------------------------
