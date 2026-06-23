@@ -1,0 +1,75 @@
+{
+  "name": "Course Framework",
+  "description": "The course framework defines how lessons, modules, and learning experiences are structured within the Blessedly Stressed OS ecosystem.",
+  "structure": {
+    "course": {
+      "description": "A complete learning experience with multiple modules",
+      "components": ["title", "description", "target_audience", "modules", "outcomes"]
+    },
+    "module": {
+      "description": "A themed unit within a course containing multiple lessons",
+      "components": ["title", "description", "lessons", "scripture_anchor", "reflection"]
+    },
+    "lesson": {
+      "description": "A single teaching unit with content and application",
+      "components": ["title", "scripture", "teaching_content", "application", "reflection_questions", "action_step"]
+    }
+  },
+  "modules": [
+    {
+      "id": "mod-001",
+      "title": "Foundation: Identity in Christ",
+      "description": "Establishing who you are before establishing what you do.",
+      "scripture_anchor": "Ephesians 2:10",
+      "lessons": [
+        "You Are SAVIOR Made",
+        "From Stressed to Blessed",
+        "The Order of Operations",
+        "State Check: Know Before You Go"
+      ]
+    },
+    {
+      "id": "mod-002",
+      "title": "Kingdom Flow: Purpose & Direction",
+      "description": "Discovering and walking in your God-given purpose.",
+      "scripture_anchor": "Proverbs 3:5-6",
+      "lessons": [
+        "What Is Kingdom Flow?",
+        "Hearing God in the Noise",
+        "Aligning Vision with Scripture",
+        "Purpose Mapping Exercise"
+      ]
+    },
+    {
+      "id": "mod-003",
+      "title": "DC Flow: Creative Expression",
+      "description": "Using creativity as worship and testimony.",
+      "scripture_anchor": "Psalm 33:3",
+      "lessons": [
+        "The DC Flow Framework",
+        "Writing from Testimony",
+        "Scripture as Source Material",
+        "From Page to Stage (or Stream)"
+      ]
+    },
+    {
+      "id": "mod-004",
+      "title": "Stewardship & Service",
+      "description": "Managing the gifts and resources God has given you.",
+      "scripture_anchor": "Matthew 25:21",
+      "lessons": [
+        "Stewardship 101: Time, Talent, Treasure",
+        "Building Systems That Serve",
+        "Accountability Structures",
+        "From Blessed to Blessing Others"
+      ]
+    }
+  ],
+  "deliveryMethods": [
+    "Skool community modules",
+    "PDF workbooks",
+    "Video teachings",
+    "Audio devotionals",
+    "Live group sessions"
+  ]
+}

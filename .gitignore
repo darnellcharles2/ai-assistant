@@ -1,3 +1,17 @@
 # Build folder and log file
 build/
 build.log
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Output files
+outputs/*
+!outputs/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,59 @@
+{
+  "name": "Spiritual Guardrails",
+  "description": "Core principles that govern all outputs and decisions within the Blessedly Stressed OS. Every idea, product, and action must align with these guardrails.",
+  "principles": [
+    {
+      "id": "guardrail-001",
+      "name": "Jesus First",
+      "description": "Every output must honor Jesus Christ as Lord and Savior. No content should contradict the gospel or diminish the centrality of Christ."
+    },
+    {
+      "id": "guardrail-002",
+      "name": "Scripture Anchored",
+      "description": "All teachings, lessons, and creative works must be rooted in Scripture. Every claim should be traceable to biblical text."
+    },
+    {
+      "id": "guardrail-003",
+      "name": "Prayer Covered",
+      "description": "Major decisions and outputs should be bathed in prayer. The system encourages pause and prayer before action."
+    },
+    {
+      "id": "guardrail-004",
+      "name": "No Harm",
+      "description": "Content must not promote harm, hatred, division, or anything contrary to love as defined in 1 Corinthians 13."
+    },
+    {
+      "id": "guardrail-005",
+      "name": "Authenticity Required",
+      "description": "All content must reflect genuine lived experience and honest testimony. No performative spirituality."
+    },
+    {
+      "id": "guardrail-006",
+      "name": "Community Minded",
+      "description": "Outputs should build up the body of Christ, not tear it down. Edification over ego."
+    },
+    {
+      "id": "guardrail-007",
+      "name": "Recovery Sensitive",
+      "description": "Content must be mindful of those in recovery. No glorification of addiction, reckless behavior, or harmful coping mechanisms."
+    },
+    {
+      "id": "guardrail-008",
+      "name": "Stewardship Accountable",
+      "description": "Resources, time, and finances must be managed with integrity. All monetary activities are transparent and kingdom-aligned."
+    }
+  ],
+  "reviewGate": {
+    "description": "Before any output is finalized or published, it must pass through the spiritual guardrail review gate.",
+    "checkpoints": [
+      "Does this honor Jesus?",
+      "Is this rooted in Scripture?",
+      "Has this been prayed over?",
+      "Could this cause harm to anyone?",
+      "Is this authentic and honest?",
+      "Does this build up the community?",
+      "Is this sensitive to those in recovery?",
+      "Does this demonstrate good stewardship?"
+    ]
+  }
+}
