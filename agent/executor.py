@@ -5,6 +5,13 @@ import asyncio
 from typing import Dict, Any, List, Callable
 from datetime import datetime
 
+from agent.config import (
+    STEP_TIMEOUT_SECONDS,
+    MAX_STEP_RETRIES,
+    RETRY_BACKOFF_SECONDS,
+    TRANSIENT_EXCEPTIONS,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +38,12 @@ class TaskExecutor:
 
         Returns:
             Execution results
+
+        Raises:
+            ValueError: If plan is missing required keys or has invalid structure
         """
+        self._validate_plan(plan)
+
         logger.info(f"Starting execution of plan {plan['task_id']}")
 
         execution_record = {
@@ -60,7 +72,7 @@ class TaskExecutor:
                 logger.info(f"Executing step {step['step_id']}: {step['description']}")
 
                 try:
-                    result = await self._execute_step(step, plan)
+                    result = await self._execute_step_with_retries(step, plan)
                     execution_record['steps_executed'].append({
                         'step_id': step['step_id'],
                         'status': 'success',
@@ -103,6 +115,55 @@ class TaskExecutor:
             self.execution_history.append(execution_record)
             return execution_record
 
+    @staticmethod
+    def _validate_plan(plan: Dict[str, Any]) -> None:
+        """Validate that a plan dict has the required structure.
+
+        Raises:
+            ValueError: On missing or invalid fields
+        """
+        if 'task_id' not in plan:
+            raise ValueError("Plan missing required key 'task_id'")
+        if 'steps' not in plan:
+            raise ValueError("Plan missing required key 'steps'")
+        if not isinstance(plan['steps'], list):
+            raise ValueError("Plan 'steps' must be a list")
+
+    async def _execute_step_with_retries(
+        self, step: Dict[str, Any], plan: Dict[str, Any]
+    ) -> Any:
+        """Execute a step, retrying on transient errors.
+
+        Returns:
+            Step result on success
+
+        Raises:
+            The last exception if all retries are exhausted
+        """
+        last_error = None
+        for attempt in range(1, MAX_STEP_RETRIES + 1):
+            try:
+                return await self._execute_step(step, plan)
+            except TRANSIENT_EXCEPTIONS as e:
+                last_error = e
+                if attempt < MAX_STEP_RETRIES:
+                    delay = RETRY_BACKOFF_SECONDS * (2 ** (attempt - 1))
+                    logger.warning(
+                        f"Step {step['step_id']} transient failure "
+                        f"(attempt {attempt}/{MAX_STEP_RETRIES}): {e}. "
+                        f"Retrying in {delay}s"
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error(
+                        f"Step {step['step_id']} failed after "
+                        f"{MAX_STEP_RETRIES} attempts: {e}"
+                    )
+                    raise
+            except Exception:
+                raise
+        raise last_error  # unreachable, but satisfies type checkers
+
     async def _execute_step(self, step: Dict[str, Any], plan: Dict[str, Any]) -> Any:
         """Execute a single step.
 
@@ -132,7 +193,7 @@ class TaskExecutor:
             # Execute with timeout
             result = await asyncio.wait_for(
                 tool(step),
-                timeout=300  # 5 minute timeout
+                timeout=STEP_TIMEOUT_SECONDS
             )
             logger.info(f"Step {step['step_id']} completed")
             return result
@@ -140,6 +201,8 @@ class TaskExecutor:
         except asyncio.TimeoutError:
             logger.error(f"Step {step['step_id']} timed out")
             raise TimeoutError(f"Step {step['step_id']} execution timed out")
+        except TRANSIENT_EXCEPTIONS:
+            raise
         except Exception as e:
             logger.error(f"Step {step['step_id']} tool '{tool_name}' raised {type(e).__name__}: {e}")
             raise RuntimeError(
