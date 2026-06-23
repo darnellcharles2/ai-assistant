@@ -1,24 +1,176 @@
 """Task planner module - generates execution plans from natural language."""
 
 import logging
-import json
+import uuid
 from typing import Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
+
+RISKY_TOOLS = frozenset([
+    'shell_execute', 'file_delete', 'email_send',
+    'api_call_external', 'execution',
+])
 
 
 class TaskPlanner:
     """Generates structured execution plans from natural language tasks."""
-    
+
     def __init__(self, llm_client=None):
         """Initialize planner.
-        
+
         Args:
             llm_client: LLM client for plan generation
         """
         self.llm_client = llm_client
         self.reasoning_depth = 3
         logger.info("TaskPlanner initialized")
-    
-    async def generate_plan(self, task: str, context: Dict[str, Any] = None) -> Dict[str, Any]:\n        \"\"\"Generate a structured plan for a task.\n        \n        Args:\n            task: Natural language task description\n            context: Optional context from memory\n            \n        Returns:\n            Plan dictionary with steps, tools, and success criteria\n        \"\"\"\n        logger.info(f\"Generating plan for: {task}\")\n        \n        plan = {\n            'task_id': self._generate_task_id(),\n            'original_task': task,\n            'created_at': datetime.utcnow().isoformat(),\n            'steps': [],\n            'tools_needed': [],\n            'success_criteria': [],\n            'risk_level': 'low',\n            'requires_approval': False,\n            'estimated_duration_seconds': 300\n        }\n        \n        try:\n            # Step 1: Break down the task\n            steps = await self._decompose_task(task, context)\n            plan['steps'] = steps\n            \n            # Step 2: Identify required tools\n            tools = await self._identify_tools(steps)\n            plan['tools_needed'] = tools\n            \n            # Step 3: Determine risk and approval needs\n            risk_assessment = await self._assess_risk(tools, task)\n            plan['risk_level'] = risk_assessment['level']\n            plan['requires_approval'] = risk_assessment['requires_approval']\n            \n            # Step 4: Define success criteria\n            criteria = await self._define_success_criteria(task)\n            plan['success_criteria'] = criteria\n            \n            logger.info(f\"Plan generated with {len(steps)} steps\")\n            return plan\n        \n        except Exception as e:\n            logger.error(f\"Plan generation failed: {str(e)}\")\n            raise\n    \n    async def _decompose_task(self, task: str, context: Dict[str, Any] = None) -> List[Dict[str, Any]]:\n        \"\"\"Break task into actionable steps.\n        \n        Args:\n            task: Task description\n            context: Memory context\n            \n        Returns:\n            List of steps\n        \"\"\"\n        logger.info(\"Decomposing task into steps\")\n        \n        # Simple decomposition - can be enhanced with LLM\n        steps = [\n            {\n                'step_id': 1,\n                'description': 'Analyze and understand the task',\n                'tool': 'reasoning',\n                'depends_on': [],\n                'order': 1\n            },\n            {\n                'step_id': 2,\n                'description': 'Prepare and validate inputs',\n                'tool': 'validation',\n                'depends_on': [1],\n                'order': 2\n            },\n            {\n                'step_id': 3,\n                'description': f'Execute: {task}',\n                'tool': 'execution',\n                'depends_on': [2],\n                'order': 3\n            },\n            {\n                'step_id': 4,\n                'description': 'Validate results and return',\n                'tool': 'validation',\n                'depends_on': [3],\n                'order': 4\n            }\n        ]\n        \n        return steps\n    \n    async def _identify_tools(self, steps: List[Dict[str, Any]]) -> List[str]:\n        \"\"\"Identify which tools are needed.\n        \n        Args:\n            steps: Decomposed steps\n            \n        Returns:\n            List of tool names\n        \"\"\"\n        tools = set()\n        \n        for step in steps:\n            tools.add(step['tool'])\n        \n        # Add common tools based on task context\n        tools.update(['memory', 'logger'])\n        \n        return list(tools)\n    \n    async def _assess_risk(self, tools: List[str], task: str) -> Dict[str, Any]:\n        \"\"\"Assess risk level of the task.\n        \n        Args:\n            tools: Tools to be used\n            task: Task description\n            \n        Returns:\n            Risk assessment\n        \"\"\"\n        risky_tools = ['shell_execute', 'file_delete', 'email_send', 'api_call_external']\n        requires_approval = any(tool in risky_tools for tool in tools)\n        \n        risk_level = 'high' if requires_approval else 'low'\n        \n        return {\n            'level': risk_level,\n            'requires_approval': requires_approval,\n            'reason': 'Sensitive tools detected' if requires_approval else 'Safe operation'\n        }\n    \n    async def _define_success_criteria(self, task: str) -> List[str]:\n        \"\"\"Define what success looks like.\n        \n        Args:\n            task: Task description\n            \n        Returns:\n            List of success criteria\n        \"\"\"\n        return [\n            'Task completes without errors',\n            'Output matches expected format',\n            'No data loss or corruption'\n        ]\n    \n    def _generate_task_id(self) -> str:\n        \"\"\"Generate unique task ID.\n        \n        Returns:\n            Task ID string\n        \"\"\"\n        import uuid\n        return str(uuid.uuid4())[:8]\n
+
+    async def generate_plan(self, task: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Generate a structured plan for a task.
+
+        Args:
+            task: Natural language task description
+            context: Optional context from memory
+
+        Returns:
+            Plan dictionary with steps, tools, and success criteria
+        """
+        logger.info(f"Generating plan for: {task}")
+
+        plan = {
+            'task_id': self._generate_task_id(),
+            'original_task': task,
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'steps': [],
+            'tools_needed': [],
+            'success_criteria': [],
+            'risk_level': 'low',
+            'requires_approval': False,
+            'estimated_duration_seconds': 300
+        }
+
+        try:
+            steps = await self._decompose_task(task, context)
+            plan['steps'] = steps
+
+            tools = await self._identify_tools(steps)
+            plan['tools_needed'] = tools
+
+            risk_assessment = await self._assess_risk(tools, task)
+            plan['risk_level'] = risk_assessment['level']
+            plan['requires_approval'] = risk_assessment['requires_approval']
+
+            criteria = await self._define_success_criteria(task)
+            plan['success_criteria'] = criteria
+
+            logger.info(f"Plan generated with {len(steps)} steps")
+            return plan
+
+        except Exception as e:
+            logger.error(f"Plan generation failed: {str(e)}")
+            raise
+
+    async def _decompose_task(self, task: str, context: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """Break task into actionable steps.
+
+        Args:
+            task: Task description
+            context: Memory context
+
+        Returns:
+            List of steps
+        """
+        logger.info("Decomposing task into steps")
+
+        steps = [
+            {
+                'step_id': 1,
+                'description': 'Analyze and understand the task',
+                'tool': 'reasoning',
+                'depends_on': [],
+                'order': 1
+            },
+            {
+                'step_id': 2,
+                'description': 'Prepare and validate inputs',
+                'tool': 'validation',
+                'depends_on': [1],
+                'order': 2
+            },
+            {
+                'step_id': 3,
+                'description': f'Execute: {task}',
+                'tool': 'execution',
+                'depends_on': [2],
+                'order': 3
+            },
+            {
+                'step_id': 4,
+                'description': 'Validate results and return',
+                'tool': 'validation',
+                'depends_on': [3],
+                'order': 4
+            }
+        ]
+
+        return steps
+
+    async def _identify_tools(self, steps: List[Dict[str, Any]]) -> List[str]:
+        """Identify which tools are needed.
+
+        Args:
+            steps: Decomposed steps
+
+        Returns:
+            List of tool names
+        """
+        tools = set()
+
+        for step in steps:
+            tools.add(step['tool'])
+
+        return list(tools)
+
+    async def _assess_risk(self, tools: List[str], task: str) -> Dict[str, Any]:
+        """Assess risk level of the task.
+
+        Args:
+            tools: Tools to be used
+            task: Task description
+
+        Returns:
+            Risk assessment
+        """
+        requires_approval = any(tool in RISKY_TOOLS for tool in tools)
+
+        risk_level = 'high' if requires_approval else 'low'
+
+        return {
+            'level': risk_level,
+            'requires_approval': requires_approval,
+            'reason': 'Sensitive tools detected' if requires_approval else 'Safe operation'
+        }
+
+    async def _define_success_criteria(self, task: str) -> List[str]:
+        """Define what success looks like.
+
+        Args:
+            task: Task description
+
+        Returns:
+            List of success criteria
+        """
+        return [
+            'Task completes without errors',
+            'Output matches expected format',
+            'No data loss or corruption'
+        ]
+
+    def _generate_task_id(self) -> str:
+        """Generate unique task ID.
+
+        Returns:
+            Task ID string
+        """
+        return str(uuid.uuid4())[:8]

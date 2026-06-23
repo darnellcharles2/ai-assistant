@@ -1,6 +1,16 @@
-async def placeholder_tool(step):
-    return {'status': 'ok', 'detail': f"Executed {step['description']}"}
+"""Example tools for the TaskExecutor."""
 
-# Example tool registration (uncomment for use)
-# executor = TaskExecutor()
-# asyncio.run(executor.register_tool('execution', placeholder_tool))
+from typing import Any, Dict
+
+
+async def placeholder_tool(step: Dict[str, Any]) -> Dict[str, Any]:
+    """Placeholder tool that echoes the step description.
+
+    Args:
+        step: Step dictionary (must contain 'description')
+
+    Returns:
+        Status dict with execution detail
+    """
+    description = step.get('description', '<no description>')
+    return {'status': 'ok', 'detail': f"Executed {description}"}
