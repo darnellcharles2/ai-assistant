@@ -1,7 +1,9 @@
 """Task planner module - generates execution plans from natural language."""
 
-from typing import Any, Dict, List
+import json
+from typing import Any, Dict, List, Optional
 
+from agent.llm import LLMClient, StubLLMClient
 from agent.utils import assess_risk, generate_task_id, get_logger, get_timestamp
 
 logger = get_logger(__name__)
@@ -10,13 +12,14 @@ logger = get_logger(__name__)
 class TaskPlanner:
     """Generates structured execution plans from natural language tasks."""
 
-    def __init__(self, llm_client=None):
+    def __init__(self, llm_client: Optional[LLMClient] = None):
         """Initialize planner.
 
         Args:
-            llm_client: LLM client for plan generation
+            llm_client: LLM client for plan generation. Falls back to
+                StubLLMClient when None.
         """
-        self.llm_client = llm_client
+        self.llm_client = llm_client or StubLLMClient()
         self.reasoning_depth = 3
         logger.info("TaskPlanner initialized")
 
@@ -74,6 +77,9 @@ class TaskPlanner:
     async def _decompose_task(self, task: str, context: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Break task into actionable steps.
 
+        Uses the LLM client when available to generate a tailored
+        decomposition; falls back to a static 4-step template.
+
         Args:
             task: Task description
             context: Memory context
@@ -83,7 +89,40 @@ class TaskPlanner:
         """
         logger.info("Decomposing task into steps")
 
-        steps = [
+        if self.llm_client and not isinstance(self.llm_client, StubLLMClient):
+            return await self._llm_decompose(task, context)
+
+        return self._default_steps(task)
+
+    async def _llm_decompose(self, task: str, context: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """Use the LLM to decompose a task into steps."""
+        system = (
+            "You are a task planner. Break the user's task into ordered steps. "
+            "Return a JSON array of objects with keys: step_id (int), "
+            "description (str), tool (str, one of: reasoning, validation, "
+            "execution, shell_execute, file_delete, email_send, api_call_external), "
+            "depends_on (list of step_id ints), order (int)."
+        )
+        ctx_str = json.dumps(context) if context else "none"
+        prompt = f"Task: {task}\nContext: {ctx_str}"
+
+        try:
+            response = await self.llm_client.complete(prompt, system=system, temperature=0.2)
+            steps = json.loads(response)
+            if isinstance(steps, list) and all(
+                isinstance(s, dict) and "step_id" in s and "description" in s
+                for s in steps
+            ):
+                return steps
+        except (json.JSONDecodeError, Exception) as e:
+            logger.warning("LLM decomposition failed, using defaults: %s", e)
+
+        return self._default_steps(task)
+
+    @staticmethod
+    def _default_steps(task: str) -> List[Dict[str, Any]]:
+        """Return the static 4-step fallback decomposition."""
+        return [
             {
                 'step_id': 1,
                 'description': 'Analyze and understand the task',
@@ -113,8 +152,6 @@ class TaskPlanner:
                 'order': 4
             }
         ]
-
-        return steps
 
     async def _identify_tools(self, steps: List[Dict[str, Any]]) -> List[str]:
         """Identify which tools are needed.
