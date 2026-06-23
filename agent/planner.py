@@ -5,6 +5,13 @@ import uuid
 from typing import Dict, Any, List
 from datetime import datetime
 
+from agent.config import (
+    REASONING_DEPTH,
+    DEFAULT_ESTIMATED_DURATION_SECONDS,
+    RISKY_TOOLS,
+    COMMON_TOOLS,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +25,7 @@ class TaskPlanner:
             llm_client: LLM client for plan generation
         """
         self.llm_client = llm_client
-        self.reasoning_depth = 3
+        self.reasoning_depth = REASONING_DEPTH
         logger.info("TaskPlanner initialized")
 
     async def generate_plan(self, task: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -48,7 +55,7 @@ class TaskPlanner:
             'success_criteria': [],
             'risk_level': 'low',
             'requires_approval': False,
-            'estimated_duration_seconds': 300
+            'estimated_duration_seconds': DEFAULT_ESTIMATED_DURATION_SECONDS
         }
 
         try:
@@ -137,7 +144,7 @@ class TaskPlanner:
             tools.add(step['tool'])
 
         # Add common tools based on task context
-        tools.update(['memory', 'logger'])
+        tools.update(COMMON_TOOLS)
 
         return list(tools)
 
@@ -151,8 +158,7 @@ class TaskPlanner:
         Returns:
             Risk assessment
         """
-        risky_tools = ['shell_execute', 'file_delete', 'email_send', 'api_call_external']
-        requires_approval = any(tool in risky_tools for tool in tools)
+        requires_approval = any(tool in RISKY_TOOLS for tool in tools)
 
         risk_level = 'high' if requires_approval else 'low'
 
