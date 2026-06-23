@@ -1,11 +1,11 @@
 """Task executor module - runs planned tasks safely."""
 
-import logging
 import asyncio
-from typing import Dict, Any, List, Callable
-from datetime import datetime
+from typing import Any, Callable, Dict, List
 
-logger = logging.getLogger(__name__)
+from agent.utils import create_execution_record, get_logger, get_timestamp, sort_steps
+
+logger = get_logger(__name__)
 
 
 class TaskExecutor:
@@ -34,17 +34,9 @@ class TaskExecutor:
         """
         logger.info(f"Starting execution of plan {plan['task_id']}")
 
-        execution_record = {
-            'plan_id': plan['task_id'],
-            'start_time': datetime.utcnow().isoformat(),
-            'steps_executed': [],
-            'status': 'in_progress',
-            'results': {},
-            'errors': []
-        }
+        execution_record = create_execution_record(plan['task_id'])
 
         try:
-            # Check if approval is needed
             if plan.get('requires_approval'):
                 approved = await self._request_approval(plan)
                 if not approved:
@@ -53,8 +45,7 @@ class TaskExecutor:
                     self.execution_history.append(execution_record)
                     return execution_record
 
-            # Execute steps in order
-            steps = sorted(plan['steps'], key=lambda s: s['order'])
+            steps = sort_steps(plan['steps'])
 
             for step in steps:
                 logger.info(f"Executing step {step['step_id']}: {step['description']}")
@@ -80,7 +71,6 @@ class TaskExecutor:
                         'status': 'failed',
                         'error': str(e)
                     })
-                    # Continue or stop depending on error severity
                     if step.get('critical'):
                         raise
 
@@ -88,7 +78,7 @@ class TaskExecutor:
                 execution_record['status'] = 'partial_success'
             else:
                 execution_record['status'] = 'success'
-            execution_record['end_time'] = datetime.utcnow().isoformat()
+            execution_record['end_time'] = get_timestamp()
 
             logger.info(f"Plan execution completed with status: {execution_record['status']}")
             self.execution_history.append(execution_record)
@@ -99,7 +89,7 @@ class TaskExecutor:
             execution_record['status'] = 'error'
             execution_record['error'] = str(e)
             execution_record['error_type'] = type(e).__name__
-            execution_record['end_time'] = datetime.utcnow().isoformat()
+            execution_record['end_time'] = get_timestamp()
             self.execution_history.append(execution_record)
             return execution_record
 
@@ -119,7 +109,6 @@ class TaskExecutor:
         """
         tool_name = step['tool']
 
-        # Get the tool
         if tool_name not in self.tools:
             raise RuntimeError(
                 f"Tool '{tool_name}' not found. "
@@ -129,10 +118,9 @@ class TaskExecutor:
         tool = self.tools[tool_name]
 
         try:
-            # Execute with timeout
             result = await asyncio.wait_for(
                 tool(step),
-                timeout=300  # 5 minute timeout
+                timeout=300
             )
             logger.info(f"Step {step['step_id']} completed")
             return result

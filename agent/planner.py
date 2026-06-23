@@ -1,11 +1,10 @@
 """Task planner module - generates execution plans from natural language."""
 
-import logging
-import uuid
-from typing import Dict, Any, List
-from datetime import datetime
+from typing import Any, Dict, List
 
-logger = logging.getLogger(__name__)
+from agent.utils import assess_risk, generate_task_id, get_logger, get_timestamp
+
+logger = get_logger(__name__)
 
 
 class TaskPlanner:
@@ -40,9 +39,9 @@ class TaskPlanner:
         logger.info(f"Generating plan for: {task}")
 
         plan = {
-            'task_id': self._generate_task_id(),
+            'task_id': generate_task_id(),
             'original_task': task,
-            'created_at': datetime.utcnow().isoformat(),
+            'created_at': get_timestamp(),
             'steps': [],
             'tools_needed': [],
             'success_criteria': [],
@@ -52,20 +51,16 @@ class TaskPlanner:
         }
 
         try:
-            # Step 1: Break down the task
             steps = await self._decompose_task(task, context)
             plan['steps'] = steps
 
-            # Step 2: Identify required tools
             tools = await self._identify_tools(steps)
             plan['tools_needed'] = tools
 
-            # Step 3: Determine risk and approval needs
-            risk_assessment = await self._assess_risk(tools, task)
+            risk_assessment = assess_risk(tools, task)
             plan['risk_level'] = risk_assessment['level']
             plan['requires_approval'] = risk_assessment['requires_approval']
 
-            # Step 4: Define success criteria
             criteria = await self._define_success_criteria(task)
             plan['success_criteria'] = criteria
 
@@ -88,7 +83,6 @@ class TaskPlanner:
         """
         logger.info("Decomposing task into steps")
 
-        # Simple decomposition - can be enhanced with LLM
         steps = [
             {
                 'step_id': 1,
@@ -136,31 +130,9 @@ class TaskPlanner:
         for step in steps:
             tools.add(step['tool'])
 
-        # Add common tools based on task context
         tools.update(['memory', 'logger'])
 
         return list(tools)
-
-    async def _assess_risk(self, tools: List[str], task: str) -> Dict[str, Any]:
-        """Assess risk level of the task.
-
-        Args:
-            tools: Tools to be used
-            task: Task description
-
-        Returns:
-            Risk assessment
-        """
-        risky_tools = ['shell_execute', 'file_delete', 'email_send', 'api_call_external']
-        requires_approval = any(tool in risky_tools for tool in tools)
-
-        risk_level = 'high' if requires_approval else 'low'
-
-        return {
-            'level': risk_level,
-            'requires_approval': requires_approval,
-            'reason': 'Sensitive tools detected' if requires_approval else 'Safe operation'
-        }
 
     async def _define_success_criteria(self, task: str) -> List[str]:
         """Define what success looks like.
@@ -176,11 +148,3 @@ class TaskPlanner:
             'Output matches expected format',
             'No data loss or corruption'
         ]
-
-    def _generate_task_id(self) -> str:
-        """Generate unique task ID.
-
-        Returns:
-            Task ID string
-        """
-        return str(uuid.uuid4())[:8]
