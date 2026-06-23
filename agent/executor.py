@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 class TaskExecutor:
     """Executes tasks with safety checks and error handling."""
-    
+
     def __init__(self, tools: Dict[str, Callable] = None, approval_callback: Callable = None):
         """Initialize executor.
-        
+
         Args:
             tools: Dictionary of available tools
             approval_callback: Function to request human approval
@@ -22,5 +22,175 @@ class TaskExecutor:
         self.approval_callback = approval_callback
         self.execution_history = []
         logger.info("TaskExecutor initialized")
-    
-    async def execute_plan(self, plan: Dict[str, Any]) -> Dict[str, Any]:\n        """Execute a task plan step by step.\n        \n        Args:\n            plan: Task plan from planner\n            \n        Returns:\n            Execution results\n        \"\"\"\n        logger.info(f\"Starting execution of plan {plan['task_id']}\")\n        \n        execution_record = {\n            'plan_id': plan['task_id'],\n            'start_time': datetime.utcnow().isoformat(),\n            'steps_executed': [],\n            'status': 'in_progress',\n            'results': {},\n            'errors': []\n        }\n        \n        try:\n            # Check if approval is needed\n            if plan.get('requires_approval'):\n                approved = await self._request_approval(plan)\n                if not approved:\n                    logger.warning(\"Execution rejected by user\")\n                    execution_record['status'] = 'rejected'\n                    return execution_record\n            \n            # Execute steps in order\n            steps = sorted(plan['steps'], key=lambda s: s['order'])\n            \n            for step in steps:\n                logger.info(f\"Executing step {step['step_id']}: {step['description']}\")\n                \n                try:\n                    result = await self._execute_step(step, plan)\n                    execution_record['steps_executed'].append({\n                        'step_id': step['step_id'],\n                        'status': 'success',\n                        'result': result\n                    })\n                    execution_record['results'][f\"step_{step['step_id']}\"] = result\n                    \n                except Exception as e:\n                    logger.error(f\"Step {step['step_id']} failed: {str(e)}\")\n                    execution_record['errors'].append({\n                        'step_id': step['step_id'],\n                        'error': str(e)\n                    })\n                    # Continue or stop depending on error severity\n                    if step.get('critical'):\n                        raise\n            \n            execution_record['status'] = 'success'\n            execution_record['end_time'] = datetime.utcnow().isoformat()\n            \n            logger.info(\"Plan execution completed successfully\")\n            self.execution_history.append(execution_record)\n            return execution_record\n        \n        except Exception as e:\n            logger.error(f\"Execution failed: {str(e)}\")\n            execution_record['status'] = 'error'\n            execution_record['error'] = str(e)\n            execution_record['end_time'] = datetime.utcnow().isoformat()\n            return execution_record\n    \n    async def _execute_step(self, step: Dict[str, Any], plan: Dict[str, Any]) -> Any:\n        \"\"\"Execute a single step.\n        \n        Args:\n            step: Step to execute\n            plan: Parent plan\n            \n        Returns:\n            Step result\n        \"\"\"\n        tool_name = step['tool']\n        \n        # Get the tool\n        if tool_name not in self.tools:\n            logger.warning(f\"Tool '{tool_name}' not found, skipping\")\n            return None\n        \n        tool = self.tools[tool_name]\n        \n        try:\n            # Execute with timeout\n            result = await asyncio.wait_for(\n                tool(step),\n                timeout=300  # 5 minute timeout\n            )\n            logger.info(f\"Step {step['step_id']} completed\")\n            return result\n        \n        except asyncio.TimeoutError:\n            logger.error(f\"Step {step['step_id']} timed out\")\n            raise TimeoutError(f\"Step {step['step_id']} execution timed out\")\n    \n    async def _request_approval(self, plan: Dict[str, Any]) -> bool:\n        \"\"\"Request human approval for sensitive operations.\n        \n        Args:\n            plan: Plan requiring approval\n            \n        Returns:\n            True if approved, False otherwise\n        \"\"\"\n        logger.info(f\"Requesting approval for plan {plan['task_id']}\")\n        \n        if not self.approval_callback:\n            logger.warning(\"No approval callback configured\")\n            return False\n        \n        try:\n            approved = await self.approval_callback(plan)\n            logger.info(f\"Approval result: {approved}\")\n            return approved\n        except Exception as e:\n            logger.error(f\"Approval request failed: {str(e)}\")\n            return False\n    \n    async def register_tool(self, name: str, tool_func: Callable) -> None:\n        \"\"\"Register a new tool.\n        \n        Args:\n            name: Tool name\n            tool_func: Async function to execute\n        \"\"\"\n        self.tools[name] = tool_func\n        logger.info(f\"Tool '{name}' registered\")\n    \n    def get_execution_history(self) -> List[Dict[str, Any]]:\n        \"\"\"Get history of executed plans.\n        \n        Returns:\n            List of execution records\n        \"\"\"\n        return self.execution_history\n
+
+    async def execute_plan(self, plan: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute a task plan step by step.
+
+        Args:
+            plan: Task plan from planner
+
+        Returns:
+            Execution results
+        """
+        logger.info(f"Starting execution of plan {plan['task_id']}")
+
+        execution_record = {
+            'plan_id': plan['task_id'],
+            'start_time': datetime.utcnow().isoformat(),
+            'steps_executed': [],
+            'status': 'in_progress',
+            'results': {},
+            'errors': []
+        }
+
+        try:
+            # Check if approval is needed
+            if plan.get('requires_approval'):
+                approved = await self._request_approval(plan)
+                if not approved:
+                    logger.warning("Execution rejected by user")
+                    execution_record['status'] = 'rejected'
+                    self.execution_history.append(execution_record)
+                    return execution_record
+
+            # Execute steps in order
+            steps = sorted(plan['steps'], key=lambda s: s['order'])
+
+            for step in steps:
+                logger.info(f"Executing step {step['step_id']}: {step['description']}")
+
+                try:
+                    result = await self._execute_step(step, plan)
+                    execution_record['steps_executed'].append({
+                        'step_id': step['step_id'],
+                        'status': 'success',
+                        'result': result
+                    })
+                    execution_record['results'][f"step_{step['step_id']}"] = result
+
+                except Exception as e:
+                    logger.error(f"Step {step['step_id']} failed: {str(e)}")
+                    execution_record['errors'].append({
+                        'step_id': step['step_id'],
+                        'error': str(e),
+                        'error_type': type(e).__name__
+                    })
+                    execution_record['steps_executed'].append({
+                        'step_id': step['step_id'],
+                        'status': 'failed',
+                        'error': str(e)
+                    })
+                    # Continue or stop depending on error severity
+                    if step.get('critical'):
+                        raise
+
+            if execution_record['errors']:
+                execution_record['status'] = 'partial_success'
+            else:
+                execution_record['status'] = 'success'
+            execution_record['end_time'] = datetime.utcnow().isoformat()
+
+            logger.info(f"Plan execution completed with status: {execution_record['status']}")
+            self.execution_history.append(execution_record)
+            return execution_record
+
+        except Exception as e:
+            logger.error(f"Execution failed: {str(e)}")
+            execution_record['status'] = 'error'
+            execution_record['error'] = str(e)
+            execution_record['error_type'] = type(e).__name__
+            execution_record['end_time'] = datetime.utcnow().isoformat()
+            self.execution_history.append(execution_record)
+            return execution_record
+
+    async def _execute_step(self, step: Dict[str, Any], plan: Dict[str, Any]) -> Any:
+        """Execute a single step.
+
+        Args:
+            step: Step to execute
+            plan: Parent plan
+
+        Returns:
+            Step result
+
+        Raises:
+            RuntimeError: If the required tool is not registered
+            TimeoutError: If step execution exceeds timeout
+        """
+        tool_name = step['tool']
+
+        # Get the tool
+        if tool_name not in self.tools:
+            raise RuntimeError(
+                f"Tool '{tool_name}' not found. "
+                f"Available tools: {list(self.tools.keys())}"
+            )
+
+        tool = self.tools[tool_name]
+
+        try:
+            # Execute with timeout
+            result = await asyncio.wait_for(
+                tool(step),
+                timeout=300  # 5 minute timeout
+            )
+            logger.info(f"Step {step['step_id']} completed")
+            return result
+
+        except asyncio.TimeoutError:
+            logger.error(f"Step {step['step_id']} timed out")
+            raise TimeoutError(f"Step {step['step_id']} execution timed out")
+        except Exception as e:
+            logger.error(f"Step {step['step_id']} tool '{tool_name}' raised {type(e).__name__}: {e}")
+            raise RuntimeError(
+                f"Step {step['step_id']} failed in tool '{tool_name}': {e}"
+            ) from e
+
+    async def _request_approval(self, plan: Dict[str, Any]) -> bool:
+        """Request human approval for sensitive operations.
+
+        Args:
+            plan: Plan requiring approval
+
+        Returns:
+            True if approved, False otherwise
+
+        Raises:
+            RuntimeError: If no approval callback is configured and plan
+                requires approval, or if the approval callback fails
+        """
+        logger.info(f"Requesting approval for plan {plan['task_id']}")
+
+        if not self.approval_callback:
+            raise RuntimeError(
+                f"Plan {plan['task_id']} requires approval but no "
+                "approval callback is configured"
+            )
+
+        try:
+            approved = await self.approval_callback(plan)
+            logger.info(f"Approval result: {approved}")
+            return approved
+        except Exception as e:
+            logger.error(f"Approval request failed: {str(e)}")
+            raise RuntimeError(
+                f"Approval request failed for plan {plan['task_id']}: {e}"
+            ) from e
+
+    async def register_tool(self, name: str, tool_func: Callable) -> None:
+        """Register a new tool.
+
+        Args:
+            name: Tool name
+            tool_func: Async function to execute
+        """
+        self.tools[name] = tool_func
+        logger.info(f"Tool '{name}' registered")
+
+    def get_execution_history(self) -> List[Dict[str, Any]]:
+        """Get history of executed plans.
+
+        Returns:
+            List of execution records
+        """
+        return self.execution_history
