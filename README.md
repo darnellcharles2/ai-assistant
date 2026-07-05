@@ -1,3 +1,5 @@
+# [![Deploy to Render](https://render.com/button.svg)](https://dashboard.render.com/deploy?repo=https://github.com/darnellcharles2/ai-assistant)
+
 # Blessedly Stressed OS MVP
 
 This repository contains a minimal implementation of the *Blessedly Stressed OS* as
@@ -21,24 +23,37 @@ memory files and integration stubs.
 
 ## Getting Started
 
-1. **Install dependencies**:
+1. **Install Node dependencies**:
 
    ```bash
-   npm install express body-parser axios
+   npm install
    ```
 
-2. **Configure environment variables**: Copy `.env.example` to `.env` and fill in
-   the required values such as `MAKE_WEBHOOK_URL` and any Google API keys.
-
-3. **Run the server**:
+2. **(Optional) Install Python test deps and run tests**:
 
    ```bash
-   node app.js
+   python -m pip install -U pytest
+   python -m pytest -q
+   ```
+
+3. **Configure environment variables**: Copy `.env.example` to `.env` and fill in
+   required values such as `MAKE_WEBHOOK_URL` and any Google API keys.
+
+4. **Run the server**:
+
+   ```bash
+   npm start
+   ```
+
+   Or run in development mode:
+
+   ```bash
+   npm run dev
    ```
 
    The server will start on `http://localhost:3000` by default.
 
-4. **Submit an idea**:
+5. **Submit an idea**:
 
    Send a POST request to `/intake` with a JSON body containing at least
    `raw_input`. For example:
