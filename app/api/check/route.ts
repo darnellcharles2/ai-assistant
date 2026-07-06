@@ -80,8 +80,12 @@ export async function POST(request: Request) {
   const data = (await response.json().catch(() => ({}))) as OpenAIResponse
 
   if (!response.ok) {
+    const message = data.error?.message || "The AI review could not be completed."
+    const friendlyQuotaMessage =
+      "The AI connection is set up, but this OpenAI project has no available quota or billing credits yet. Add billing or credits in OpenAI Platform, then try again."
+
     return Response.json(
-      { error: data.error?.message || "The AI review could not be completed." },
+      { error: message.toLowerCase().includes("quota") ? friendlyQuotaMessage : message },
       { status: response.status },
     )
   }
