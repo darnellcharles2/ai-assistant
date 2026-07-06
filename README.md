@@ -31,3 +31,5 @@ OPENAI_API_KEY
 ```
 
 The app calls OpenAI only from `app/api/check/route.ts`.
+
+Vercel preview deployments are created from the `savior-made-check` branch.
