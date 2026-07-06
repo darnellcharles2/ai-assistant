@@ -54,23 +54,29 @@ export default function Home() {
 
   return (
     <main className="shell">
-      <section className="intro">
-        <p className="eyebrow">Savior Made CHECK</p>
-        <h1>Check a message before you post it.</h1>
-        <p className="lede">
-          Paste a caption, comment, testimony, announcement, or post. The agent reviews the message with a calm Scripture-conscious lens and returns a simple CHECK result.
-        </p>
+      <section className="topbar" aria-label="Savior Made CHECK">
+        <div className="mark" aria-hidden="true">
+          <span />
+        </div>
+        <div>
+          <p className="eyebrow">Savior Made CHECK</p>
+          <h1>Bring the words back to the Cross.</h1>
+        </div>
+        <p className="costBadge">Free rule-based engine</p>
       </section>
 
       <section className="workspace" aria-label="Message checker">
         <form className="composer" onSubmit={handleSubmit}>
-          <label htmlFor="message">Message to review</label>
+          <div className="sectionHeader">
+            <label htmlFor="message">Message to review</label>
+            <span>No AI cost per check</span>
+          </div>
           <textarea
             id="message"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             maxLength={5000}
-            placeholder="Paste the message you are thinking about sharing..."
+            placeholder="Paste the post, caption, comment, testimony, lyric, or announcement..."
           />
 
           <div className="composerFooter">
@@ -84,6 +90,7 @@ export default function Home() {
         </form>
 
         <aside className="examples" aria-label="Examples">
+          <h2>Quick Tests</h2>
           {examples.map((example) => (
             <button
               key={example}
@@ -98,6 +105,12 @@ export default function Home() {
               {example}
             </button>
           ))}
+          <div className="legend" aria-label="CHECK status legend">
+            <span><b>Green</b> Aligned</span>
+            <span><b>Yellow</b> Discern</span>
+            <span><b>Blue</b> Counsel</span>
+            <span><b>Red</b> Hold</span>
+          </div>
         </aside>
       </section>
 
@@ -105,14 +118,14 @@ export default function Home() {
         {state === "idle" && (
           <div className="empty">
             <h2>Ready when you are.</h2>
-            <p>The result will appear here after the message is checked.</p>
+            <p>The check runs from your own SAVIOR / MADE / CHECK rules, so the free product does not burn paid AI tokens.</p>
           </div>
         )}
 
         {state === "loading" && (
           <div className="empty">
             <h2>Checking the message...</h2>
-            <p>The agent is reviewing the wording, risk, clarity, and counsel triggers.</p>
+            <p>Reviewing wording, risk, clarity, counsel triggers, and release guidance.</p>
           </div>
         )}
 
