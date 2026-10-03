@@ -1,107 +1,35 @@
-# [![Deploy to Render](https://render.com/button.svg)](https://dashboard.render.com/deploy?repo=https://github.com/darnellcharles2/ai-assistant)
+# Savior Made CHECK
 
-# Blessedly Stressed OS MVP
+A simple AI agent that reviews public-facing messages with the Savior Made CHECK prompt.
 
-This repository contains a minimal implementation of the *Blessedly Stressed OS* as
-outlined in the **Complete Blessedly Stressed OS Agent Blueprint v1**. The goal
-is to provide a starting point that Codex can extend into a fully featured
-system. It includes a simple Express API server, agent modules, data
-memory files and integration stubs.
+## Local setup
 
-## Features
+The local project already expects:
 
-- **Idea intake**: Accepts a raw idea and routes it to the appropriate agent.
-- **Routing logic**: Classifies ideas into music, lessons, Skool modules, digital products,
-  brand assets, automation scenarios or general guidance.
-- **Agent architecture**: Separate modules for music generation, lessons,
-  Skool building, digital products, brand visuals, automation, stewardship and more.
-- **Data memory**: JSON files under `data/` capture the spiritual guardrails,
-  state check definitions, SAVIOR Made posture, DC Flow prompts, course
-  framework and schema definitions.
-- **Integration stubs**: Placeholder modules for Google Drive, Google Sheets,
-  Make.com webhooks and Skool exports.
-
-## Getting Started
-
-1. **Install Node dependencies**:
-
-   ```bash
-   npm install
-   ```
-
-2. **(Optional) Install Python test deps and run tests**:
-
-   ```bash
-   python -m pip install -U pytest
-   python -m pytest -q
-   ```
-
-3. **Configure environment variables**: Copy `.env.example` to `.env` and fill in
-   required values such as `MAKE_WEBHOOK_URL` and any Google API keys.
-
-4. **Run the server**:
-
-   ```bash
-   npm start
-   ```
-
-   Or run in development mode:
-
-   ```bash
-   npm run dev
-   ```
-
-   The server will start on `http://localhost:3000` by default.
-
-5. **Submit an idea**:
-
-   Send a POST request to `/intake` with a JSON body containing at least
-   `raw_input`. For example:
-
-   ```bash
-   curl -X POST http://localhost:3000/intake \
-     -H 'Content-Type: application/json' \
-     -d '{"raw_input": "Write a song about redemption and grace"}'
-   ```
-
-   The server will respond with the classified idea and a stub output from
-   the selected agent.
-
-## File Structure
-
-```
-blessedly-stressed-os/
-├── app.js              – Express server entry point
-├── agents/             – Agent modules implementing specific roles
-├── data/               – JSON memory files with guardrails and frameworks
-├── routes/             – Optional modular route definitions
-├── integrations/       – Stubs for external API integrations
-├── outputs/            – Directory for generated files (empty in MVP)
-├── README.md           – This file
-└── .env.example        – Sample environment configuration
+```env
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-4.1-mini
 ```
 
-## Next Steps
+Keep the key in `.env.local` or your host's secret manager. Do not place it in browser code.
 
-This MVP intentionally leaves many functions unimplemented. The Codex build
-agent should extend this codebase to:
+## Run
 
-- Persist ideas, songs, lessons and products to a database (Google Sheets,
-  Baserow or Supabase).
-- Implement the review gate logic outlined in the blueprint.
-- Generate real song lyrics using the DC Flow prompts and integrate with
-  Suno or other music tools.
-- Build actual PDF workbooks and digital products using templates.
-- Connect to Skool's API or automation tooling to create modules and posts.
-- Integrate with Google Drive/Sheets for storage and file management.
-- Add authentication, user management and a front-end interface.
+```bash
+npm install
+npm run dev
+```
 
-## Disclaimer
+Open `http://localhost:3000`.
 
-This code is a learning exercise and an illustration of how the Blessedly
-Stressed OS could be structured. It is not intended to replace Jesus,
-Scripture, prayer, church, counsel, recovery support, medical care, legal
-responsibility or real community. Always seek God first and follow the
-order of operations: **Jesus -> Scripture -> Prayer -> State Check -> SAVIOR Made ->
-Kingdom Flow -> DC Flow -> Savior Saved -> Bible & Beats -> Skool/Course -> Digital
-Products -> Community Support -> Service**.
+## Deploy
+
+For Vercel, Replit, or Lovable-style hosting, add this secret in the project settings:
+
+```env
+OPENAI_API_KEY
+```
+
+The app calls OpenAI only from `app/api/check/route.ts`.
+
+Vercel preview deployments are created from the `savior-made-check` branch.

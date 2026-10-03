@@ -1,18 +1,23 @@
-# Build folder and log file
+node_modules
+.next
+out
+dist
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.log
+
+!.env.example
+
+# Existing generated files
 build/
 build.log
-
-# Dependencies
-node_modules/
-
-# Environment variables
-.env
-
-# Output files
 outputs/*
 !outputs/.gitkeep
 
-# OS files
+# OS and Python caches
 .DS_Store
 Thumbs.db
 __pycache__/
